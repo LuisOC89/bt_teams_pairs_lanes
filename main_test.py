@@ -4,8 +4,22 @@ import sys
 import random
 import pdb
 
+DEBUG = "on"
+FILE_NAME = "teams_test_long"
+USER_VALIDATION = "y"
+PAIR_QUANTITY = "4"
+MAX_TEAMS_PER_PAIR = "4"
+STARTING_LANE_NUMBER = "5"
+SEE_SPECIFIC_TEAM_USER_VALIDATION = "n"
+TEAM_NUMBER_TO_SEE = "99"
+TEAMS_TO_PREFILL = 5
+PAIR_NUMBER_TO_PREFILL = "1"
+TEAM_NUMBERS_TO_PREFILL_PAIR = "02,80,88"
+
 def main():
-      
+    if DEBUG:
+        pdb.set_trace()
+
     file_path, file_name = get_file_data()
     
     teams = create_teams_dict(file_path)
@@ -28,18 +42,28 @@ def get_file_data():
     
     # Try to get file name until valid
     while True:
-        file_name = input("\nPlease insert the *.csv file name and press ENTER... ")
+        if DEBUG:
+            file_name = FILE_NAME
+        else:  
+            file_name = input("\nPlease insert the *.csv file name and press ENTER... ")
         file_name = f"{file_name}.csv"
         file_path = os.path.join(dir_path, file_name)
         print("current field path is: " + file_path)  
-        user_validation = input("Is this correct ([y]/n)?")
+
+        if DEBUG:
+            user_validation = USER_VALIDATION
+        else:  
+            user_validation = input("Is this correct ([y]/n)?")
         if not user_validation or user_validation == "y":
             try:
                 with open(file_path) as csv_file:
                     csv_reader = csv.reader(csv_file, delimiter=',')
                     return file_path, file_name
             except:
-                input("The file doesn't exist, try again... ")  
+                if DEBUG:
+                    raise Exception("The file doesn't exist, try again... ")
+                else:
+                    input("The file doesn't exist, try again... ")  
         else:
             pass
 
@@ -66,7 +90,10 @@ def create_teams_dict(file_path):
 def show_teams_dict(teams_dict, file_name):
     print(f"\nTOTAL TEAMS: {len(teams_dict.keys())}")
     while True:
-        user_validation = input(f"Would you like to see all the teams recorded from {file_name} ([y]/n)?")
+        if DEBUG:
+            user_validation = USER_VALIDATION
+        else:    
+            user_validation = input(f"Would you like to see all the teams recorded from {file_name} ([y]/n)?")
         if not user_validation or user_validation == "y":
             for k, v in teams_dict.items():
                 print(f"\n{k}:")
@@ -82,7 +109,10 @@ def show_teams_dict(teams_dict, file_name):
 def insert_pairs_and_lanes(teams):
     teams_quantity = len(teams.keys())
     while True:
-        pairs = input("\nHow many pairs of lanes there will be? ")
+        if DEBUG:
+            pairs = PAIR_QUANTITY
+        else:
+            pairs = input("\nHow many pairs of lanes there will be? ")
         try:
             pairs_int = int(pairs)
             pairs_float = float(pairs)
@@ -90,11 +120,17 @@ def insert_pairs_and_lanes(teams):
                 raise Exception
             total_pairs = pairs_int
         except:
-            input("The value of pairs has to be a whole positive number, please try again... ")
+            if DEBUG:
+                raise Exception("The value of pairs has to be a whole positive number, please try again... ")
+            else:
+                input("The value of pairs has to be a whole positive number, please try again... ")
             continue
 
         while True:
-            max_teams_per_pair = input("\nWhat will be the max amount of teams per pair of lanes? ")
+            if DEBUG:
+                max_teams_per_pair = MAX_TEAMS_PER_PAIR
+            else:
+                max_teams_per_pair = input("\nWhat will be the max amount of teams per pair of lanes? ")
             try:
                 teams_per_pair_int = int(max_teams_per_pair)
                 teams_per_pair_float = float(max_teams_per_pair)
@@ -103,19 +139,29 @@ def insert_pairs_and_lanes(teams):
                 teams_per_pair = teams_per_pair_int
                 break
             except:
-                input("The value of teams per pair has to be a whole positive number, please try again... ")
+                if DEBUG:
+                    raise Exception("The value of teams per pair has to be a whole positive number, please try again... ")
+                else:
+                    input("The value of teams per pair has to be a whole positive number, please try again... ")
                 continue
         
         capacity = teams_per_pair * total_pairs
         if capacity < teams_quantity:
             print(f"capacity = {total_pairs} pairs of lanes * {teams_per_pair} teams per pair = {capacity} spaces available.")
-            input(f"Number of teams ({teams_quantity} teams) exceeds the capacity " 
-            f"({capacity} spaces available) of the place.\nPlease try again... ")
+            if DEBUG:
+                raise Exception("Number of teams ({teams_quantity} teams) exceeds the capacity " 
+                    f"({capacity} spaces available) of the place.\nPlease try again... ")
+            else:
+                input(f"Number of teams ({teams_quantity} teams) exceeds the capacity " 
+                f"({capacity} spaces available) of the place.\nPlease try again... ")
         else:
             break
 
     while True:
-        starting_lane_number = input("\nWhat will be the starting odd lane number? ")
+        if DEBUG:
+            starting_lane_number = STARTING_LANE_NUMBER
+        else:
+            starting_lane_number = input("\nWhat will be the starting odd lane number? ")
         try:
             lane_int = int(starting_lane_number)
             lane_float = float(starting_lane_number)
@@ -124,7 +170,10 @@ def insert_pairs_and_lanes(teams):
             initial_lane = lane_int
             break
         except:
-            input("The value of the first lane has to be a whole odd positive number, please try again... ")
+            if DEBUG:
+                raise Exception("The value of the first lane has to be a whole odd positive number, please try again... ")
+            else:
+                input("The value of the first lane has to be a whole odd positive number, please try again... ")
     
     print(f"\nTotal teams: {teams_quantity}\nTotal pairs of lanes: {total_pairs}"
         f"\nMax teams per lane: {teams_per_pair}\nInitial odd lane number: {initial_lane}")
@@ -133,16 +182,25 @@ def insert_pairs_and_lanes(teams):
 
 def see_specific_team(teams):
     while True:
-        user_validation = input(f"\nWould you like to see a specific team's players? ([y]/n)?")
+        if DEBUG:
+            user_validation = SEE_SPECIFIC_TEAM_USER_VALIDATION
+        else:
+            user_validation = input(f"\nWould you like to see a specific team's players? ([y]/n)?")
         if not user_validation or user_validation == "y":
-            team_number = input(f"What team? (team #)?")
+            if DEBUG:
+                team_number = TEAM_NUMBER_TO_SEE
+            else:
+                team_number = input(f"What team? (team #)?")
             if f"Team {team_number}" in teams.keys():
                 print(f"\nTeam {team_number}")
                 for player in teams[f"Team {team_number}"]:
                     print(player)
                 continue
             else:
-                print("That team # doesn't exist.")
+                if DEBUG:
+                    raise Exception("That team # doesn't exist.")
+                else:
+                    print("That team # doesn't exist.")
         elif user_validation == "n":
             break
         else:
@@ -175,8 +233,15 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
         available_pairs_of_lanes.append(f"Pair #{i}")
         available_pairs_team_players_dict[f"Pair #{i}"] = []
     
+    counter = 0
     while True:
-        user_validation = input(f"\nWould you like to prefill a pair of lanes partially or totally with custom teams? ([y]/n)?")
+        if DEBUG: 
+            if counter <= TEAMS_TO_PREFILL:
+                user_validation = "y"
+            else:
+                user_validation = "n"
+        else:
+            user_validation = input(f"\nWould you like to prefill a pair of lanes partially or totally with custom teams? ([y]/n)?")
         if user_validation == "y":
             print(f"\navailable_pairs_of_lanes: {available_pairs_of_lanes}"
             f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}"
@@ -184,10 +249,16 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
             f"\nfilled_pairs_team_players_dict: {filled_pairs_team_players_dict}"
             f"\navailable_teams_list: {available_teams_list}")
             
-            pair_number = input(f"\nWhat pair #?")
+            if DEBUG:
+                pair_number = PAIR_NUMBER_TO_PREFILL
+            else:
+                pair_number = input(f"\nWhat pair #?")
             if f"Pair #{pair_number}" in available_pairs_of_lanes:
                 pair_spaces_taken = len(available_pairs_team_players_dict[f"Pair #{pair_number}"])
-                team_numbers = input(f"Please insert what team #s you would like to add to this pair (comma separated, no spaces): ")
+                if DEBUG:
+                    team_numbers = TEAM_NUMBERS_TO_PREFILL_PAIR
+                else:
+                    team_numbers = input(f"Please insert what team #s you would like to add to this pair (comma separated, no spaces): ")
                 try:
                     team_numbers = team_numbers.split(",")
                     for number in team_numbers:
@@ -223,7 +294,10 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
                             print(f"Team {number}")
                             for player in teams[f"Team {number}"]:
                                 print(player)
-                        user_validation = input(f"\nIs this correct (y/n)?")
+                        if DEBUG:
+                            user_validation = USER_VALIDATION
+                        else:
+                            user_validation = input(f"\nIs this correct (y/n)?")
                         if user_validation != "y":
                             continue
                         for number in team_numbers:
@@ -310,7 +384,7 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
                     break
         else:
             pass
-
+        counter =+ 1
     return filled_pairs_team_players_dict
 
 if __name__ == "__main__":
