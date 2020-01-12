@@ -15,12 +15,8 @@ def main():
 
     total_pairs, max_teams_per_pair, initial_lane = insert_pairs_and_lanes(teams)
     
+    pairs_and_teams = handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
     
-    # filled_pairs_of_lanes_list = ["Pair1", "Pair2", "Pair3"]
-    # filled_pairs_of_lanes_dict = {"Pair1":[{"Team1":["Player1", Player2]},{"Team2":["Player1","Player2"]},{"Team3":["Player1","Player2"]}}
-    filled_pairs_of_lanes = []
-    empty_pairs_of_lanes = []
-    teams_list = list(teams.keys())
 
     input("\nPress Enter to continue...")
 
@@ -146,6 +142,35 @@ def see_specific_team(teams):
             break
         else:
             pass
+
+def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane):
+    # filled_pairs_of_lanes_list = ["Pair1", "Pair2", "Pair3"]
+    # filled_pairs_of_lanes_dict = {"Pair1":[{"Team1":["Player1", Player2]},{"Team2":["Player1","Player2"]},{"Team3":["Player1","Player2"]]}}
+    # filled_pairs_of_lanes_dict = {
+    #     "Pair1":[
+    #         {"Team1":["Player1", "Player2"]},
+    #         {"Team2":["Player1", "Player2"]}
+    #     ]}
+    
+    # filled_pairs_of_lanes_dict = {
+    #     "Pair1":[
+    #         {"Team1":{"Player1": "Lane 3A", "Player2": "Lane 4A"}},
+    #         {"Team2":{"Player1": "Lane 3B", "Player2": "Lane 4B"}}
+    #     ]}
+
+    filled_pairs_of_lanes_list = []
+    filled_pairs_of_lanes_dict = {}
+    empty_pairs_of_lanes = []
+
+    for i in range(1, total_pairs + 1):
+        filled_pairs_of_lanes_list.append(f"Pair {i}")
+        filled_pairs_of_lanes_dict[f"Pair {i}"] = []
+    teams_list = list(teams.keys())
+    
+    print(f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes_list}"
+            f"\nfilled_pairs_of_lanes_dict: {filled_pairs_of_lanes_dict}"
+            f"\nteams_list: {teams_list}")
+    return filled_pairs_of_lanes_dict
 
 if __name__ == "__main__":
     main()
