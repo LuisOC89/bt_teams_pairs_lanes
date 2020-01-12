@@ -52,7 +52,7 @@ def create_teams_dict(file_path):
             if row_count != 0:
                 if row[0] != "0":
                     pre = ""
-                    if int(row[1]) < 10:
+                    if len(row[1]) < 2:
                         pre = "0"    
                     if f"Team {row[1]}" in teams:
                         teams[f"Team {pre}{row[1]}"].append(row[0])
