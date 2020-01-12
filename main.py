@@ -17,6 +17,7 @@ def main():
     
     pairs_and_teams = handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
     
+    # teams_and_lanes = 
 
     input("\nPress Enter to continue...")
 
@@ -50,10 +51,13 @@ def create_teams_dict(file_path):
         for row in csv_reader:
             if row_count != 0:
                 if row[0] != "0":
+                    pre = ""
+                    if int(row[1]) < 10:
+                        pre = "0"    
                     if f"Team {row[1]}" in teams:
-                        teams[f"Team {row[1]}"].append(row[0])
+                        teams[f"Team {pre}{row[1]}"].append(row[0])
                     else:
-                        teams[f"Team {row[1]}"] = [row[0]]
+                        teams[f"Team {pre}{row[1]}"] = [row[0]]
             row_count += 1
         # print(f"Teams dict: {teams}")
     return teams
@@ -145,31 +149,57 @@ def see_specific_team(teams):
 
 def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane):
     # filled_pairs_of_lanes_list = ["Pair1", "Pair2", "Pair3"]
-    # filled_pairs_of_lanes_dict = {"Pair1":[{"Team1":["Player1", Player2]},{"Team2":["Player1","Player2"]},{"Team3":["Player1","Player2"]]}}
-    # filled_pairs_of_lanes_dict = {
+    # filled_pairs_team_players_dict = {
     #     "Pair1":[
     #         {"Team1":["Player1", "Player2"]},
     #         {"Team2":["Player1", "Player2"]}
     #     ]}
     
-    # filled_pairs_of_lanes_dict = {
+    # filled_pairs_team_players_lanes_dict = {
     #     "Pair1":[
     #         {"Team1":{"Player1": "Lane 3A", "Player2": "Lane 4A"}},
     #         {"Team2":{"Player1": "Lane 3B", "Player2": "Lane 4B"}}
     #     ]}
 
-    filled_pairs_of_lanes_list = []
+    filled_pairs_of_lanes = []
     filled_pairs_of_lanes_dict = {}
-    empty_pairs_of_lanes = []
+    available_pairs_of_lanes = []
+    teams_list = list(teams.keys())
 
     for i in range(1, total_pairs + 1):
-        filled_pairs_of_lanes_list.append(f"Pair {i}")
-        filled_pairs_of_lanes_dict[f"Pair {i}"] = []
-    teams_list = list(teams.keys())
+        available_pairs_of_lanes.append(f"Pair #{i}")
     
-    print(f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes_list}"
+    print(f"\nempty_pairs_of_lanes: {available_pairs_of_lanes}"
+            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes_list}"
             f"\nfilled_pairs_of_lanes_dict: {filled_pairs_of_lanes_dict}"
             f"\nteams_list: {teams_list}")
+
+    while True:
+        user_validation = input(f"\nWould you like to prefill a pair of lanes partially or totally with custom teams? ([y]/n)?")
+        if user_validation == "y":
+            print(f"\nAvailable pairs of lanes: {available_pairs_of_lanes}")
+            pair_number = input(f"What pair #?")
+            if f"Pair #{pair_number}" in available_pairs_of_lanes:
+                team_numbers = input(f"Please insert what team #s you would like to add together (comma separated, no spaces): ")
+                try:
+                    team_numbers = team_numbers.split(",")
+                    if len(team_numbers) > max_teams_per_pair:
+                        print(f"The amount of teams you entered ({team_numbers}) exceeds the max amount allowed for teams per pair ({max_teams_per_pair}), please try again... ")
+                        continue
+                    for number in team_numbers:
+                        if f"Team {number}" not in teams.keys():
+                            print(f"Team {number} doesn't exist, please try again...")
+                            continue  
+                except:
+                    print(f"Invalid team #s entered, please try again... ")         
+            else:
+                print("That pair # doesn't exist.")
+        elif user_validation == "n":
+            # TODO: Random order
+            break
+        else:
+            pass
+
     return filled_pairs_of_lanes_dict
 
 if __name__ == "__main__":
