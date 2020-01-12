@@ -161,16 +161,18 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
     #         {"Team2":{"Player1": "Lane 3B", "Player2": "Lane 4B"}}
     #     ]}
 
+    
     filled_pairs_of_lanes = []
     filled_pairs_of_lanes_dict = {}
     available_pairs_of_lanes = []
+    available_pairs_team_players_dict = {}
     teams_list = list(teams.keys())
 
     for i in range(1, total_pairs + 1):
         available_pairs_of_lanes.append(f"Pair #{i}")
     
     print(f"\nempty_pairs_of_lanes: {available_pairs_of_lanes}"
-            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes_list}"
+            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}"
             f"\nfilled_pairs_of_lanes_dict: {filled_pairs_of_lanes_dict}"
             f"\nteams_list: {teams_list}")
 
@@ -180,20 +182,38 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
             print(f"\nAvailable pairs of lanes: {available_pairs_of_lanes}")
             pair_number = input(f"What pair #?")
             if f"Pair #{pair_number}" in available_pairs_of_lanes:
+                pair_spaces_taken = len(available_pairs_team_players_dict[f"Pair #{pair_number}"])
                 team_numbers = input(f"Please insert what team #s you would like to add together (comma separated, no spaces): ")
                 try:
                     team_numbers = team_numbers.split(",")
-                    if len(team_numbers) > max_teams_per_pair:
-                        print(f"The amount of teams you entered ({team_numbers}) exceeds the max amount allowed for teams per pair ({max_teams_per_pair}), please try again... ")
+                    if len(team_numbers) + pair_spaces_taken > max_teams_per_pair:
+                        print(f"Pair #{pair_number}\n")
+                        for team in available_pairs_team_players_dict[f"Pair #{pair_number}"]:
+                            print(team)
+                        print(f"Spaces already taken in Pair #{pair_number}: {pair_spaces_taken}"
+                              f"\nNew teams to add to this Pair: {team_numbers}"
+                              f"\nMax amount allowed for teams per pair : {max_teams_per_pair}"
+                              f"\nThe amount of teams you entered ({team_numbers}) plus spaces taken already in " 
+                              f"that pair exceed the max amount allowed for teams per pair ({max_teams_per_pair}), please try again... ")
                         continue
+                    else:
+                        # TODO: WHat to do when there are still spaces available
+                except:
+                    print(f"Invalid team #s entered, please try again... ")     
+                try:
                     for number in team_numbers:
                         if f"Team {number}" not in teams.keys():
-                            print(f"Team {number} doesn't exist, please try again...")
-                            continue  
-                except:
-                    print(f"Invalid team #s entered, please try again... ")         
+                            raise Exception(f"Team {number} doesn't exist, please try again...")  
+                except Exception as ex:
+                    print(ex)  
+                
+                # TODO: Is this correct?
+
             else:
                 print("That pair # doesn't exist.")
+            
+
+
         elif user_validation == "n":
             # TODO: Random order
             break
