@@ -129,7 +129,7 @@ def insert_pairs_and_lanes(teams):
     print(f"\nTotal teams: {teams_quantity}\nTotal pairs of lanes: {total_pairs}"
         f"\nMax teams per lane: {teams_per_pair}\nInitial odd lane number: {initial_lane}")
 
-    return total_pairs, max_teams_per_pair, initial_lane
+    return total_pairs, teams_per_pair, initial_lane
 
 def see_specific_team(teams):
     while True:
