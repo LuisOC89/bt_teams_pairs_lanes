@@ -5,7 +5,7 @@ import random
 import pdb
 
 def main():
-      
+    pdb.set_trace()
     file_path, file_name = get_file_data()
     
     teams = create_teams_dict(file_path)
@@ -55,7 +55,7 @@ def create_teams_dict(file_path):
                     pre = ""
                     if len(row[1]) < 2:
                         pre = "0"    
-                    if f"Team {row[1]}" in teams:
+                    if f"Team {pre}{row[1]}" in teams:
                         teams[f"Team {pre}{row[1]}"].append(row[0])
                     else:
                         teams[f"Team {pre}{row[1]}"] = [row[0]]
