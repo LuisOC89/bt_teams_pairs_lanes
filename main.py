@@ -384,7 +384,7 @@ def create_csv_with_lanes_and_teams(lanes_and_teams):
     # Want: Team | Name | Lane 
 
     with open('lanes_and_teams.csv', mode='w') as lanes_and_teams_doc:
-        csv_writer = csv.writer(lanes_and_teams_doc, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(lanes_and_teams_doc, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
         csv_writer.writerow(['Team', 'Name', 'Lane'])
         for k, pair in lanes_and_teams.items():
             for team_dicts in pair:
