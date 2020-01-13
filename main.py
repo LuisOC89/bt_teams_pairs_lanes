@@ -2,10 +2,12 @@ import os
 import csv
 import sys
 import random
+import copy
+import string
 import pdb
 
 def main():
-      
+    
     file_path, file_name = get_file_data()
     
     teams = create_teams_dict(file_path)
@@ -16,10 +18,12 @@ def main():
 
     total_pairs, max_teams_per_pair, initial_lane = insert_pairs_and_lanes(teams)
     
-    pairs_and_teams = handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
+    pairs_and_teams = handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair)
     
-    # teams_and_lanes = 
+    lanes_and_teams = handle_lanes_and_teams(pairs_and_teams, max_teams_per_pair, initial_lane)
 
+    create_csv_with_lanes_and_teams(lanes_and_teams)
+    
     input("\nPress Enter to continue...")
 
 def get_file_data():
@@ -54,7 +58,7 @@ def create_teams_dict(file_path):
                 if row[0] != "0":
                     pre = ""
                     if len(row[1]) < 2:
-                        pre = "0"    
+                        pre = "0"
                     if f"Team {row[1]}" in list(teams.keys()):
                         teams[f"Team {pre}{row[1]}"].append(row[0])
                     else:
@@ -99,16 +103,19 @@ def insert_pairs_and_lanes(teams):
                 teams_per_pair_int = int(max_teams_per_pair)
                 teams_per_pair_float = float(max_teams_per_pair)
                 if teams_per_pair_int != teams_per_pair_float or teams_per_pair_int <= 0:
-                    raise Exception
+                    raise Exception("The value of teams per pair has to be a whole positive number, please try again... ")
+                elif teams_per_pair_int > len(list(string.ascii_uppercase)):
+                    # ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' -> Max 26 teams per pair
+                    raise Exception("The value of teams per pair has to be a whole positive number, please try again... ")
                 teams_per_pair = teams_per_pair_int
                 break
-            except:
-                input("The value of teams per pair has to be a whole positive number, please try again... ")
+            except Exception as ex:
+                input(ex)
                 continue
         
         capacity = teams_per_pair * total_pairs
         if capacity < teams_quantity:
-            print(f"capacity = {total_pairs} pairs of lanes * {teams_per_pair} teams per pair = {capacity} spaces available.")
+            print(f"Capacity = {total_pairs} pairs of lanes * {teams_per_pair} teams per pair = {capacity} spaces available.")
             input(f"Number of teams ({teams_quantity} teams) exceeds the capacity " 
             f"({capacity} spaces available) of the place.\nPlease try again... ")
         else:
@@ -129,7 +136,7 @@ def insert_pairs_and_lanes(teams):
     print(f"\nTotal teams: {teams_quantity}\nTotal pairs of lanes: {total_pairs}"
         f"\nMax teams per lane: {teams_per_pair}\nInitial odd lane number: {initial_lane}")
 
-    return total_pairs, max_teams_per_pair, initial_lane
+    return total_pairs, teams_per_pair, initial_lane
 
 def see_specific_team(teams):
     while True:
@@ -148,107 +155,98 @@ def see_specific_team(teams):
         else:
             pass
 
-def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane):
+def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
     # filled_pairs_of_lanes_list = ["Pair1", "Pair2", "Pair3"]
-    # filled_pairs_team_players_dict = {
+    # pairs_team_players_dict = {
     #     "Pair1":[
     #         {"Team1":["Player1", "Player2"]},
     #         {"Team2":["Player1", "Player2"]}
     #     ]}
     
-    # filled_pairs_team_players_lanes_dict = {
-    #     "Pair1":[
-    #         {"Team1":{"Player1": "Lane 3A", "Player2": "Lane 4A"}},
-    #         {"Team2":{"Player1": "Lane 3B", "Player2": "Lane 4B"}}
-    #     ]}
-
-    
-    filled_pairs_of_lanes = []
-    available_pairs_of_lanes = []
-    ordered_available_pairs_of_lanes = []
     available_teams_list = list(teams.keys())
-
-    filled_pairs_team_players_dict = {}
-    available_pairs_team_players_dict = {}
-
+    pairs_team_players_dict = {}
+    available_pairs_of_lanes = []
+    current_available_pairs_of_lanes = []
+    filled_pairs_of_lanes = []
+    
     for i in range(1, total_pairs + 1):
         available_pairs_of_lanes.append(f"Pair #{i}")
-        available_pairs_team_players_dict[f"Pair #{i}"] = []
+        current_available_pairs_of_lanes.append(f"Pair #{i}")
+        pairs_team_players_dict[f"Pair #{i}"] = []
     
     while True:
         user_validation = input(f"\nWould you like to prefill a pair of lanes partially or totally with custom teams? ([y]/n)?")
         if user_validation == "y":
-            print(f"\navailable_pairs_of_lanes: {available_pairs_of_lanes}"
-            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}"
-            f"\navailable_pairs_team_players_dict: {available_pairs_team_players_dict}"
-            f"\nfilled_pairs_team_players_dict: {filled_pairs_team_players_dict}"
-            f"\navailable_teams_list: {available_teams_list}")
-            
-            pair_number = input(f"\nWhat pair #?")
-            if f"Pair #{pair_number}" in available_pairs_of_lanes:
-                pair_spaces_taken = len(available_pairs_team_players_dict[f"Pair #{pair_number}"])
+            print(f"\navailable_teams_list: {available_teams_list}"
+            f"\nAvailable pair numbers: {current_available_pairs_of_lanes}")
+
+            pair_number = input(f"\nWhat pair #? Pair #")
+            pair_number = f"Pair #{pair_number}"
+            if pair_number in current_available_pairs_of_lanes:
+                pair_spaces_taken = len(pairs_team_players_dict[pair_number])
                 team_numbers = input(f"Please insert what team #s you would like to add to this pair (comma separated, no spaces): ")
                 try:
                     team_numbers = team_numbers.split(",")
+                    team_numbers_tmp = []
                     for number in team_numbers:
-                        if f"Team {number}" not in teams.keys():
-                            raise Exception(f"Team {number} doesn't exist, please try again... ")  
+                        if f"Team {number}" not in available_teams_list:
+                            raise Exception(f"Team {number} doesn't exist or it is not available, please try again... ") 
+                        else:
+                            team_numbers_tmp.append(f"Team {number}")
+                    team_numbers = team_numbers_tmp
                     if len(team_numbers) + pair_spaces_taken > max_teams_per_pair:
-                        print(f"Pair #{pair_number}\n")
-                        for team in available_pairs_team_players_dict[f"Pair #{pair_number}"]:
+                        print(pair_number)
+                        for team in pairs_team_players_dict[pair_number]:
                             print(team)
-                        print(f"Spaces already taken in Pair #{pair_number}: {pair_spaces_taken}"
+                        print(f"Spaces already taken in {pair_number}: {pair_spaces_taken}"
                               f"\nNew teams to add to this Pair: {team_numbers}"
                               f"\nMax amount allowed for teams per pair : {max_teams_per_pair}"
                               f"\nThe amount of teams you entered ({team_numbers}) plus spaces taken already in " 
                               f"that pair exceed the max amount allowed for teams per pair ({max_teams_per_pair}), please try again... ")
                         raise Exception("Max amount allowed for teams per pair exceeded, please try again... ")
                     else:
-                        # TODO: WHat to do when there are still spaces available
-                        # filled_pairs_team_players_dict = {
+                        # WHat to do when there are still spaces available
+                        # pairs_team_players_dict = {
                         #     "Pair1":[
                         #         {"Team1":["Player1", "Player2"]},
                         #         {"Team2":["Player1", "Player2"]}
                         #     ]}
-                        print(f"\nSelected Pair: #{pair_number}")
-                        if f"Pair #{pair_number}" in filled_pairs_team_players_dict.keys():
-                            for team in filled_pairs_team_players_dict[f"Pair #{pair_number}"]:
-                                print(team.keys()[0])
-                                for player in [team.values()]:
-                                    print(player)
-                        elif f"Pair #{pair_number}" not in filled_pairs_team_players_dict.keys():
-                            print("Empty pair")
+                        print(f"\nSelected Pair: {pair_number}")
+                        
+                        if len(pairs_team_players_dict[pair_number]) == 0:
+                            print("- Empty pair")
+                        else:
+                            for team in list(pairs_team_players_dict[pair_number]):
+                                print(f"-> {list(team.keys())[0]}: {list(team.values())[0]}")
+                        
                         print(f"Teams to add:")
-                        for number in team_numbers:
-                            print(f"Team {number}")
-                            for player in teams[f"Team {number}"]:
-                                print(player)
+                        for team_number in team_numbers:
+                            print(f"+ {team_number}: {teams[team_number]}")
+                            
                         user_validation = input(f"\nIs this correct (y/n)?")
+                        
                         if user_validation != "y":
                             continue
-                        for number in team_numbers:
+                        for team_number in team_numbers:
                             team_dict = {} 
-                            team_dict[f"Team {number}"] = teams[f"Team {number}"]
-                            if f"Pair #{pair_number}" in filled_pairs_team_players_dict.keys():
-                                filled_pairs_team_players_dict[f"Pair #{pair_number}"].append(team_dict)
-                            else:
-                                filled_pairs_team_players_dict[f"Pair #{pair_number}"] = [team_dict]
-                            available_teams_list.remove(f"Team {number}")
+                            team_dict[team_number] = teams[team_number]
+                            pairs_team_players_dict[pair_number].append(team_dict)
+                            available_teams_list.remove(team_number)
+                        if len(pairs_team_players_dict[pair_number]) == max_teams_per_pair:
+                            current_available_pairs_of_lanes.remove(pair_number)
+                            filled_pairs_of_lanes.append(pair_number)
 
-                        if len(filled_pairs_team_players_dict[f"Pair #{pair_number}"]) == max_teams_per_pair:
-                            # filled_pairs_of_lanes.append(f"Pair #{pair_number}")
-                            # available_pairs_of_lanes.remove(f"Pair #{pair_number}")
-                            filled_pairs_of_lanes.append(available_pairs_of_lanes.pop(available_pairs_of_lanes.index(f"Pair #{pair_number}")))
                 except Exception as ex:
                     print(ex)   
                     continue  
             else:
                 print("That pair # doesn't exist or is not available.")
+
         elif user_validation == "n":
             # Random order
             # Start filling dicts by the ones that have less values
             # Example:
-            # filled_pairs_team_players_dict = {
+            # pairs_team_players_dict = {
             #     "Pair1":[
             #         {"Team1":["Player1", "Player2"]},
             #         {"Team2":["Player1", "Player2"]}
@@ -264,54 +262,136 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
             #     "Pair4":[]
             # }
             # Start filling Pair4 first
-            
+            print(f"\navailable_teams_list: {available_teams_list}"
+            f"\npairs_team_players_dict: {pairs_team_players_dict}"
+            f"\navailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
+            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
             index = 0
             for index in range(max_teams_per_pair):
                 for pair_number in available_pairs_of_lanes:
-                    # If there is already data there
-                    if len(available_pairs_team_players_dict[pair_number]) > index:
-                        # DO NOTHING
-                        pass
-                    elif len(available_pairs_team_players_dict[pair_number]) <= index:
-                        random_team = random.choice(available_teams_list)
+                    if pair_number not in filled_pairs_of_lanes:
+                        # If there is already data there but still empty spaces
+                        if len(pairs_team_players_dict[pair_number]) <= index:
+                            random_team = random.choice(available_teams_list)
 
-                        print(f"\nPair: #{pair_number}")
-                        if f"Pair #{pair_number}" in filled_pairs_team_players_dict.keys():
-                            for team in filled_pairs_team_players_dict[f"Pair #{pair_number}"]:
-                                print(team.keys()[0])
-                                for player in [team.values()]:
-                                    print(player)
-                        elif f"Pair #{pair_number}" not in filled_pairs_team_players_dict.keys():
-                            print("Empty pair")
-                        print(f"Team to add:")
-                        print(f"Team {random_team}")
-                        for player in teams[f"Team {random_team}"]:
-                            print(player)
+                            print(f"\n{pair_number}")
+                            if len(pairs_team_players_dict[pair_number]) == 0:
+                                print("- Empty pair")
+                            else:
+                                for team in list(pairs_team_players_dict[pair_number]):
+                                    print(f"-> {list(team.keys())[0]}: {list(team.values())[0]}")
+                                    
+                            print(f"Team to add:\n+ {random_team}: {teams[random_team]}")
+                            
+                            team_dict = {} 
+                            team_dict[random_team] = teams[random_team]
+                            pairs_team_players_dict[pair_number].append(team_dict)
+                            available_teams_list.remove(f"{random_team}")
+                            if len(pairs_team_players_dict[pair_number]) == max_teams_per_pair:
+                                current_available_pairs_of_lanes.remove(pair_number)
+                                filled_pairs_of_lanes.append(pair_number)
+                                
+                        if len(available_teams_list) == 0:
+                            print(f"\navailable_teams_list: {available_teams_list}"
+                            f"\npairs_team_players_dict: {pairs_team_players_dict}"
+                            f"\navailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
+                            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
+                            break
                         
-                        team_dict = {} 
-                        team_dict[f"Team {random_team}"] = teams[f"Team {random_team}"]
-                        if f"Pair #{pair_number}" in filled_pairs_team_players_dict.keys():
-                            filled_pairs_team_players_dict[f"Pair #{pair_number}"].append(team_dict)
-                        else:
-                            filled_pairs_team_players_dict[f"Pair #{pair_number}"] = [team_dict]
-                        available_teams_list.remove(f"Team {random_team}")
-
-                        if len(filled_pairs_team_players_dict[f"Pair #{pair_number}"]) == max_teams_per_pair:
-                            # filled_pairs_of_lanes.append(f"Pair #{pair_number}")
-                            # available_pairs_of_lanes.remove(f"Pair #{pair_number}")
-                            filled_pairs_of_lanes.append(available_pairs_of_lanes.pop(available_pairs_of_lanes.index(f"Pair #{pair_number}")))
-                
-                if len(available_teams_list) == 0:
-                    print(f"\navailable_pairs_of_lanes: {available_pairs_of_lanes}"
-                    f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}"
-                    f"\navailable_pairs_team_players_dict: {available_pairs_team_players_dict}"
-                    f"\nfilled_pairs_team_players_dict: {filled_pairs_team_players_dict}"
-                    f"\navailable_teams_list: {available_teams_list}")
-                    break
+            break
         else:
             pass
 
-    return filled_pairs_team_players_dict
+    # Example result    
+    #     pairs_team_players_dict = {'Pair #1': [{'Team 83': ["David O'Mygod", 'Dalton Sorry']}, {'Team 99': ['Diego Coca', 'Kat MaxCubos']}, {'Team 86': ['Austin Texas', 'Austin Tailored']}, {'Team 03': ['Troy Amazon', 'Luis Cuban']}],
+    #  'Pair #2': [{'Team 02': ['Whale Willy', 'Danika Patrykc']}, {'Team 01': ['Geico Buffet', 'Tiger Wuds']}, {'Team 82': ['Colin Loser', 'Hal Keys']}],
+    #  'Pair #3': [{'Team 80': ['Teddy Crux', 'Ricardo Martinez']},
+    #              {'Team 81': ['Jamie Bailes', 'Jorge Snyder']},
+    #              {'Team 84': ['Tim Merlin', 'Marco Aurelious']},
+    #              {'Team 85': ['Chip DeMexico', 'Khaleel Krypton']}],
+    #  'Pair #4': [{'Team 87': ['Tirus Rex', 'Darion Byte']}, {'Team 88': ['Billy ElNino', 'Steve Brown']}, {'Team 100': ['Stephanie McFerrari', 'Rafa Peque�o']}]}
 
+    return pairs_team_players_dict
+
+def handle_lanes_and_teams(pairs_and_teams, max_teams_per_pair, initial_lane):
+    # From this:
+    # pairs_team_players_dict = {
+    #     "Pair1":[
+    #         {"Team1":["Player1", "Player2"]},
+    #         {"Team2":["Player1", "Player2"]}
+    #     ],
+    #     "Pair2":[
+    #         {"Team1":["Player1", "Player2"]},
+    #         {"Team2":["Player1", "Player2"]},
+    #         {"Team3":["Player1", "Player2"]}
+    #     ],
+    #     "Pair3":[
+    #         {"Team1":["Player1", "Player2"]}
+    #     ],
+    #     "Pair4":[]
+    # }
+
+    # To this:
+    # filled_pairs_team_players_lanes_dict = {
+    #     "Pair1":[
+    #         {"Team1":{"Player1": "Lane 3A", "Player2": "Lane 4A"}},
+    #         {"Team2":{"Player1": "Lane 3B", "Player2": "Lane 4B"}}
+    #     ]}
+
+    # ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' -> Max 26 teams per pair
+    new_dict = dict.fromkeys(pairs_and_teams.keys(),{})
+
+    possible_lane_letters = list(string.ascii_uppercase)
+    counter_odd = initial_lane
+    for k, children in pairs_and_teams.items():
+        new_children = []
+        letter_counter = 0
+        for child in children:
+            letter = possible_lane_letters[letter_counter]
+            tmp_dict = {}
+            tmp_dict[list(child.keys())[0]] = {}
+            for value in list(child.values())[0]:
+                if ((list(child.values())[0]).index(value) + 1) % 2 == 0:
+                    tmp_dict[list(child.keys())[0]][value] = f"Lane {counter_odd + 1}{letter}"
+                else:
+                    tmp_dict[list(child.keys())[0]][value] = f"Lane {counter_odd}{letter}"
+                
+            new_children.append(tmp_dict)
+            letter_counter += 1
+
+        new_dict[k] = new_children
+        counter_odd += 2
+
+    return new_dict
+
+def create_csv_with_lanes_and_teams(lanes_and_teams):
+    # lanes_and_teams = {
+    #     'Pair #1': [{'Team 83': {'Dalton Sorry': 'Lane 6A', "David O'Mygod": 'Lane 5A'}},
+    #              {'Team 99': {'Diego Coca': 'Lane 5B', 'Kat MaxCubos': 'Lane 6B'}},
+    #              {'Team 86': {'Austin Tailored': 'Lane 6C', 'Austin Texas': 'Lane 5C'}},
+    #              {'Team 03': {'Luis Cuban': 'Lane 6D', 'Troy Amazon': 'Lane 5D'}}],
+    #     'Pair #2': [{'Team 02': {'Danika Patrykc': 'Lane 8A', 'Whale Willy': 'Lane 7A'}},
+    #              {'Team 01': {'Geico Buffet': 'Lane 7B', 'Tiger Wuds': 'Lane 8B'}},
+    #              {'Team 82': {'Colin Loser': 'Lane 7C', 'Hal Keys': 'Lane 8C'}}],
+    #     'Pair #3': [{'Team 80': {'Ricardo Martinez': 'Lane 10A', 'Teddy Crux': 'Lane 9A'}},
+    #              {'Team 81': {'Jamie Bailes': 'Lane 9B', 'Jorge Snyder': 'Lane 10B'}},
+    #              {'Team 84': {'Marco Aurelious': 'Lane 10C', 'Tim Merlin': 'Lane 9C'}},
+    #              {'Team 85': {'Chip DeMexico': 'Lane 9D', 'Khaleel Krypton': 'Lane 10D'}}],
+    #     'Pair #4': [{'Team 87': {'Darion Byte': 'Lane 12A', 'Tirus Rex': 'Lane 11A'}},
+    #              {'Team 88': {'Billy ElNino': 'Lane 11B', 'Steve Brown': 'Lane 12B'}},
+    #              {'Team 100': {'Rafa Peque�o': 'Lane 12C', 'Stephanie McFerrari': 'Lane 11C'}}]}
+    
+    # Want: Team | Name | Lane 
+
+    with open('lanes_and_teams.csv', mode='w') as lanes_and_teams_doc:
+        csv_writer = csv.writer(lanes_and_teams_doc, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(['Team', 'Name', 'Lane'])
+        for k, pair in lanes_and_teams.items():
+            for team_dicts in pair:
+                team = list(team_dicts.keys())[0]
+                for players_dict in team_dicts.values():
+                    for name, lane in players_dict.items():
+                        csv_writer.writerow([team, name, lane])
+    
 if __name__ == "__main__":
     main()
