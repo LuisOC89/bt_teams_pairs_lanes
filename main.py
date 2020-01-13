@@ -35,7 +35,7 @@ def get_file_data():
         file_name = input("\nPlease insert the *.csv file name and press ENTER... ")
         file_name = f"{file_name}.csv"
         file_path = os.path.join(dir_path, file_name)
-        print("current field path is: " + file_path)  
+        print("Current file path is: " + file_path)  
         user_validation = input("Is this correct ([y]/n)?")
         if not user_validation or user_validation == "y":
             try:
@@ -134,7 +134,7 @@ def insert_pairs_and_lanes(teams):
             input("The value of the first lane has to be a whole odd positive number, please try again... ")
     
     print(f"\nTotal teams: {teams_quantity}\nTotal pairs of lanes: {total_pairs}"
-        f"\nMax teams per lane: {teams_per_pair}\nInitial odd lane number: {initial_lane}")
+        f"\nMax teams per pair: {teams_per_pair}\nInitial odd lane number: {initial_lane}")
 
     return total_pairs, teams_per_pair, initial_lane
 
@@ -177,7 +177,7 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
     while True:
         user_validation = input(f"\nWould you like to prefill a pair of lanes partially or totally with custom teams? ([y]/n)?")
         if user_validation == "y":
-            print(f"\navailable_teams_list: {available_teams_list}"
+            print(f"\nAvailable_teams_list: {available_teams_list}"
             f"\nAvailable pair numbers: {current_available_pairs_of_lanes}")
 
             pair_number = input(f"\nWhat pair #? Pair #")
@@ -187,6 +187,7 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
                 team_numbers = input(f"Please insert what team #s you would like to add to this pair (comma separated, no spaces): ")
                 try:
                     team_numbers = team_numbers.split(",")
+                    team_numbers = list(set(team_numbers))
                     team_numbers_tmp = []
                     for number in team_numbers:
                         if f"Team {number}" not in available_teams_list:
@@ -262,10 +263,10 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
             #     "Pair4":[]
             # }
             # Start filling Pair4 first
-            print(f"\navailable_teams_list: {available_teams_list}"
-            f"\npairs_team_players_dict: {pairs_team_players_dict}"
-            f"\navailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
-            f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
+            print(f"\nAvailable_teams_list: {available_teams_list}"
+            f"\nPairs_team_players_dict: {pairs_team_players_dict}"
+            f"\nAvailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
+            f"\nFilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
             index = 0
             for index in range(max_teams_per_pair):
                 for pair_number in available_pairs_of_lanes:
@@ -292,10 +293,10 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
                                 filled_pairs_of_lanes.append(pair_number)    
                 
                     if len(available_teams_list) == 0:
-                        print(f"\navailable_teams_list: {available_teams_list}"
-                        f"\npairs_team_players_dict: {pairs_team_players_dict}"
-                        f"\navailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
-                        f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
+                        print(f"\nAvailable_teams_list: {available_teams_list}"
+                        f"\nPairs_team_players_dict: {pairs_team_players_dict}"
+                        f"\nAvailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
+                        f"\nFilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
                         break
                         
             break
