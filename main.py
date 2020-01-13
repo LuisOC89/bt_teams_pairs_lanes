@@ -386,7 +386,6 @@ def create_csv_with_lanes_and_teams(lanes_and_teams):
     with open('lanes_and_teams.csv', mode='w') as lanes_and_teams_doc:
         csv_writer = csv.writer(lanes_and_teams_doc, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         csv_writer.writerow(['Team', 'Name', 'Lane'])
-        pdb.set_trace()
         for k, pair in lanes_and_teams.items():
             for team_dicts in pair:
                 team = list(team_dicts.keys())[0]
