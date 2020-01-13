@@ -221,7 +221,7 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair, initial_lane)
                         
                         print(f"Teams to add:")
                         for team_number in team_numbers:
-                            print(f"{team_number}: {teams[team_number]}")
+                            print(f"+ {team_number}: {teams[team_number]}")
                             
                         user_validation = input(f"\nIs this correct (y/n)?")
                         
