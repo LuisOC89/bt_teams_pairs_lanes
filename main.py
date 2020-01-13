@@ -273,7 +273,7 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
                         # If there is already data there but still empty spaces
                         if len(pairs_team_players_dict[pair_number]) <= index:
                             random_team = random.choice(available_teams_list)
-
+                            
                             print(f"\n{pair_number}")
                             if len(pairs_team_players_dict[pair_number]) == 0:
                                 print("- Empty pair")
@@ -290,12 +290,13 @@ def handle_pairs_and_teams(teams, total_pairs, max_teams_per_pair):
                             if len(pairs_team_players_dict[pair_number]) == max_teams_per_pair:
                                 current_available_pairs_of_lanes.remove(pair_number)
                                 filled_pairs_of_lanes.append(pair_number)    
-                if len(available_teams_list) == 0:
-                    print(f"\navailable_teams_list: {available_teams_list}"
-                    f"\npairs_team_players_dict: {pairs_team_players_dict}"
-                    f"\navailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
-                    f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
-                    break
+                
+                    if len(available_teams_list) == 0:
+                        print(f"\navailable_teams_list: {available_teams_list}"
+                        f"\npairs_team_players_dict: {pairs_team_players_dict}"
+                        f"\navailable_pairs_of_lanes: {current_available_pairs_of_lanes}"
+                        f"\nfilled_pairs_of_lanes_list: {filled_pairs_of_lanes}")
+                        break
                         
             break
         else:
