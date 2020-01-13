@@ -7,63 +7,35 @@ import string
 import pdb
 
 def main():
-    pairs_team_players_dict = {
-        "Pair1":[
-            {"Team1":["Player1", "Player2"]},
-            {"Team2":["Player1", "Player2"]}
-        ],
-        "Pair2":[
-            {"Team1":["Player1", "Player2"]},
-            {"Team2":["Player1", "Player2"]},
-            {"Team3":["Player1", "Player2"]}
-        ],
-        "Pair3":[
-            {"Team1":["Player1", "Player2"]}
-        ]
-    }
-
+    # lanes_and_teams = {
+    #     'Pair #1': [{'Team 83': {'Dalton Sorry': 'Lane 6A', "David O'Mygod": 'Lane 5A'}},
+    #              {'Team 99': {'Diego Coca': 'Lane 5B', 'Kat MaxCubos': 'Lane 6B'}},
+    #              {'Team 86': {'Austin Tailored': 'Lane 6C', 'Austin Texas': 'Lane 5C'}},
+    #              {'Team 03': {'Luis Cuban': 'Lane 6D', 'Troy Amazon': 'Lane 5D'}}],
+    #     'Pair #2': [{'Team 02': {'Danika Patrykc': 'Lane 8A', 'Whale Willy': 'Lane 7A'}},
+    #              {'Team 01': {'Geico Buffet': 'Lane 7B', 'Tiger Wuds': 'Lane 8B'}},
+    #              {'Team 82': {'Colin Loser': 'Lane 7C', 'Hal Keys': 'Lane 8C'}}],
+    #     'Pair #3': [{'Team 80': {'Ricardo Martinez': 'Lane 10A', 'Teddy Crux': 'Lane 9A'}},
+    #              {'Team 81': {'Jamie Bailes': 'Lane 9B', 'Jorge Snyder': 'Lane 10B'}},
+    #              {'Team 84': {'Marco Aurelious': 'Lane 10C', 'Tim Merlin': 'Lane 9C'}},
+    #              {'Team 85': {'Chip DeMexico': 'Lane 9D', 'Khaleel Krypton': 'Lane 10D'}}],
+    #     'Pair #4': [{'Team 87': {'Darion Byte': 'Lane 12A', 'Tirus Rex': 'Lane 11A'}},
+    #              {'Team 88': {'Billy ElNino': 'Lane 11B', 'Steve Brown': 'Lane 12B'}},
+    #              {'Team 100': {'Rafa Peque�o': 'Lane 12C', 'Stephanie McFerrari': 'Lane 11C'}}]}
     
-    
-    children = [
-        {"Team1":["Player1", "Player2"]},
-        {"Team2":["Player1", "Player2"]}
-    ]
-    pdb.set_trace()
-    # Desired
-    # new_children = [
-    #     {"Team1":{"Player1": "Lane 1A", "Player2": "Lane 2A"}},
-    #     {"Team2":{"Player1": "Lane 1B", "Player2": "Lane 2B"}}
-    # ]
+    # Want: Team | Name | Lane 
 
-    # From: {"Team1":["Player1", "Player2"]}
-    # To: {"Team1":{"Player1": "Lane 3A", "Player2": "Lane 4A"}}
 
-    # new_children.append(dict.fromkeys(child.keys(),{}))
-
-    new_dict = dict.fromkeys(pairs_team_players_dict.keys(),{})
-
-    possible_lane_letters = list(string.ascii_uppercase)
-    counter_odd = 3
-    for k, children in pairs_team_players_dict.items():
-        new_children = []
-        letter_counter = 0
-        for child in children:
-            letter = possible_lane_letters[letter_counter]
-            tmp_dict = {}
-            tmp_dict[list(child.keys())[0]] = {}
-            for value in list(child.values())[0]:
-                if ((list(child.values())[0]).index(value) + 1) % 2 == 0:
-                    tmp_dict[list(child.keys())[0]][value] = f"Lane {counter_odd + 1}{letter}"
-                else:
-                    tmp_dict[list(child.keys())[0]][value] = f"Lane {counter_odd}{letter}"
-                
-            new_children.append(tmp_dict)
-            letter_counter += 1
-
-        new_dict[k] = new_children
-        counter_odd += 2
-
-    return new_dict
+    with open('lanes_and_teams.csv', mode='w') as lanes_and_teams_doc:
+        csv_writer = csv.writer(lanes_and_teams_doc, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(['Team', 'Name', 'Lane'])
+        pdb.set_trace()
+        for k, pair in lanes_and_teams.items():
+            for team_dicts in pair:
+                team = list(team_dicts.keys())[0]
+                for players_dict in team_dicts.values():
+                    for name, lane in players_dict.items():
+                        csv_writer.writerow([team, name, lane])
 
 if __name__ == "__main__":
     main()
